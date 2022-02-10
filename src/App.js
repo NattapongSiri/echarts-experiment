@@ -31,24 +31,47 @@ function App() {
     setAnnotations([...annotations, {
       name: selectedSeries,
       from,
-      to
+      to,
+      show: true,
     }])
   }, [annotations, selectedSeries])
+  const onShowAnnotation = useCallback((from, to, show) => {
+    let newState = annotations.map(obj =>
+      obj.from === from && obj.to === to ? { ...obj, show: !show } : obj
+    );
+    setAnnotations(newState)
+  },[annotations, setAnnotations])
+  const onDeleteAnnotation = useCallback((from, to) => {
+    let filtered = annotations.filter(annotation => annotation.from !== from && annotation.to !== to)
+    setAnnotations(filtered)
+  },[annotations, setAnnotations])
+
   const [textToBePlaced, setTextToBePlaced] = useState(undefined)
   const onTextPlaced = useCallback((coord, text) => {
     setAnnotations([...annotations, {
       name: selectedSeries,
       coord,
-      value: text
+      value: text,
+      show: true
     }])
     setTextToBePlaced(undefined)
   }, [annotations, setAnnotations, selectedSeries, setTextToBePlaced])
+  const onShowTextPlaced = useCallback((coord,value, show) => {
+    let newState = annotations.map(obj =>
+      obj.coord === coord && obj.value === value ? { ...obj, show: !show } : obj
+    );
+    setAnnotations(newState)
+  },[annotations, setAnnotations])
+  const onDeleteTextPlaced = useCallback((coord,value) => {
+    let filtered = annotations.filter(annotation => annotation.coord !== coord && annotation.value !== value)
+    setAnnotations(filtered)
+  },[annotations, setAnnotations])
 
   return (
     <div className="App">
       <AnnotationToolbox seriesNames={Object.keys(seriesConfigs)} defaultSeries={selectedSeries} onChange={changeHandler} onPlaceText={txt => setTextToBePlaced(txt)} />
-      <AnnotatableChart annotatingIndex={selectedSeriesIndex} annotatingType={textToBePlaced === undefined?'line':'text'} series={series} onAnnotationDraw={onAnnotationDraw} placeText={textToBePlaced} onTextPlaced={onTextPlaced}/>
-      <AnnotationsTable annotations={annotations}/>
+      <AnnotatableChart annotatingIndex={selectedSeriesIndex} annotatingType={textToBePlaced === undefined?'line':'text'} series={series} curAnnotations={annotations} onAnnotationDraw={onAnnotationDraw} placeText={textToBePlaced} onTextPlaced={onTextPlaced}/>
+      <AnnotationsTable annotations={annotations} deleteAnnotation={onDeleteAnnotation} deleteTextPlaced={onDeleteTextPlaced} showAnnotation={onShowAnnotation} showTextPlaced={onShowTextPlaced}/>
     </div>
   );
 }
